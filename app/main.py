@@ -1,4 +1,22 @@
+import os
+from pathlib import Path
 import sys
+
+
+def command_type(arg):
+    if arg in ["echo", "exit", "type"]:
+        sys.stdout.write(f"{arg} is a shell builtin\n")
+        return
+    path = os.getenv("PATH", "")
+    for sub_path in path.split(os.pathsep):
+        if os.path.exists(sub_path):
+            for root, _, files in os.walk(sub_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    if file == arg and  os.access(file_path, os.X_OK):
+                        sys.stdout.write(f"{arg} is {file_path}\n")
+                        return
+    sys.stdout.write(f"{arg}: not found\n")
 
 
 def main():
@@ -12,10 +30,7 @@ def main():
             continue
         if command.startswith("type "):
             type_command = command[5:]
-            if type_command in ["echo", "exit", "type"]:
-                sys.stdout.write(f"{type_command} is a shell builtin\n")
-            else:
-                sys.stdout.write(f"{type_command}: not found\n")
+            command_type(type_command)
             continue
         sys.stdout.write(f"{command}: command not found\n")
 
