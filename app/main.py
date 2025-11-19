@@ -19,6 +19,10 @@ def command_type(arg):
     sys.stdout.write(f"{arg}: not found\n")
 
 
+def command_echo(arg):
+    sys.stdout.write(arg + "\n")
+
+
 def main():
     while True:
         sys.stdout.write("$ ")
@@ -26,13 +30,11 @@ def main():
         if command == "exit 0":
             break
         if command.startswith("echo "):
-            sys.stdout.write(command[5:] + "\n")
-            continue
-        if command.startswith("type "):
-            type_command = command[5:]
-            command_type(type_command)
-            continue
-        sys.stdout.write(f"{command}: command not found\n")
+            command_echo(command[5:])
+        elif command.startswith("type "):
+            command_type(command[5:])
+        else:
+            sys.stdout.write(f"{command}: command not found\n")
 
 
 if __name__ == "__main__":
