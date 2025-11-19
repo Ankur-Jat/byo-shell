@@ -1,12 +1,10 @@
 import os
 from pathlib import Path
+import subprocess
 import sys
 
 
-def command_type(arg):
-    if arg in ["echo", "exit", "type"]:
-        sys.stdout.write(f"{arg} is a shell builtin\n")
-        return
+def _search_executable(arg):
     path = os.getenv("PATH", "")
     for sub_path in path.split(os.pathsep):
         if os.path.exists(sub_path):
@@ -14,8 +12,27 @@ def command_type(arg):
                 for file in files:
                     file_path = os.path.join(root, file)
                     if file == arg and  os.access(file_path, os.X_OK):
-                        sys.stdout.write(f"{arg} is {file_path}\n")
-                        return
+                        return file_path
+    return None
+
+
+def run_executable(arg):
+    command = arg.split(" ")[0]
+    executable_path = _search_executable(command)
+    if executable_path:
+        subprocess.run(arg.split(" "))
+        return True
+    return False
+
+
+def command_type(arg):
+    if arg in ["echo", "exit", "type"]:
+        sys.stdout.write(f"{arg} is a shell builtin\n")
+        return
+    file_path = _search_executable(arg)
+    if file_path:
+        sys.stdout.write(f"{arg} is {file_path}\n")
+        return
     sys.stdout.write(f"{arg}: not found\n")
 
 
@@ -33,7 +50,7 @@ def main():
             command_echo(command[5:])
         elif command.startswith("type "):
             command_type(command[5:])
-        else:
+        elif not run_executable(command):
             sys.stdout.write(f"{command}: command not found\n")
 
 
