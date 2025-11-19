@@ -26,7 +26,7 @@ def run_executable(arg):
 
 
 def command_type(arg):
-    if arg in ["echo", "exit", "type"]:
+    if arg in ["echo", "exit", "type", "pwd"]:
         sys.stdout.write(f"{arg} is a shell builtin\n")
         return
     file_path = _search_executable(arg)
@@ -34,6 +34,10 @@ def command_type(arg):
         sys.stdout.write(f"{arg} is {file_path}\n")
         return
     sys.stdout.write(f"{arg}: not found\n")
+
+
+def command_pwd():
+    print(os.getcwd())
 
 
 def command_echo(arg):
@@ -50,6 +54,8 @@ def main():
             command_echo(command[5:])
         elif command.startswith("type "):
             command_type(command[5:])
+        elif command == "pwd":
+            command_pwd()
         elif not run_executable(command):
             sys.stdout.write(f"{command}: command not found\n")
 
