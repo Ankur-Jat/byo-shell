@@ -1,4 +1,5 @@
 import os
+import shlex
 from pathlib import Path
 import subprocess
 import sys
@@ -16,17 +17,16 @@ def _search_executable(arg):
     return None
 
 
-def run_executable(arg):
-    command = arg.split(" ")[0]
+def run_executable(command, args):
     executable_path = _search_executable(command)
     if executable_path:
-        subprocess.run(arg.split(" "))
+        subprocess.run([command] + args)
         return True
     return False
 
 
 def command_type(arg):
-    if arg in ["echo", "exit", "type", "pwd"]:
+    if arg in ["echo", "exit", "type", "pwd", "cd"]:
         sys.stdout.write(f"{arg} is a shell builtin\n")
         return
     file_path = _search_executable(arg)
@@ -40,24 +40,40 @@ def command_pwd():
     print(os.getcwd())
 
 
-def command_echo(arg):
-    sys.stdout.write(arg + "\n")
+def command_echo(args):
+    sys.stdout.write(shlex.join(args) + "\n")
+
+
+def command_cd(arg):
+    if len(arg) != 1:
+        raise Exception("cd commange needs one argument. Argument is missing")
+    if os.path.isdir(arg[0]):
+        os.chdir(arg[0])
+    else:
+        print(f"cd: {arg[0]}: No such file or directory")
 
 
 def main():
     while True:
         sys.stdout.write("$ ")
-        command = input("")
-        if command == "exit 0":
+        cmd_input = input("")
+        if not cmd_input.strip():
+            print("\n")
+            continue
+        parts = shlex.split(cmd_input)
+        command, args = parts[0], parts[1:]
+        if command == "exit":
             break
-        if command.startswith("echo "):
-            command_echo(command[5:])
-        elif command.startswith("type "):
-            command_type(command[5:])
+        if command == "echo":
+            command_echo(args)
+        elif command == "type":
+            command_type(args[0])
         elif command == "pwd":
             command_pwd()
-        elif not run_executable(command):
-            sys.stdout.write(f"{command}: command not found\n")
+        elif command == "cd":
+            command_cd(args)
+        elif not run_executable(command, args):
+            sys.stdout.write(f"{cmd_input}: command not found\n")
 
 
 if __name__ == "__main__":
