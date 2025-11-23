@@ -48,7 +48,9 @@ def command_type(arg):
 def command_cd(arg):
     if len(arg) != 1:
         raise Exception("cd commange needs one argument. Argument is missing")
-    if os.path.isdir(arg[0]):
+    if arg[0].strip() == "~":
+        os.chdir(os.getenv("HOME"))
+    elif os.path.isdir(arg[0]):
         os.chdir(arg[0])
     else:
         print(f"cd: {arg[0]}: No such file or directory")
