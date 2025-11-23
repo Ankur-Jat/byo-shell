@@ -5,6 +5,15 @@ import subprocess
 import sys
 
 
+BUILT_IN = {
+    "echo": lambda x: print(shlex.join(x)),
+    "type": lambda x: command_type(x[0]),
+    "pwd": lambda _: print(os.getcwd()),
+    "cd": lambda x: command_cd(x),
+    "exit": lambda _: exit(0)
+}
+
+
 def _search_executable(arg):
     path = os.getenv("PATH", "")
     for sub_path in path.split(os.pathsep):
@@ -26,7 +35,7 @@ def run_executable(command, args):
 
 
 def command_type(arg):
-    if arg in ["echo", "exit", "type", "pwd", "cd"]:
+    if arg in BUILT_IN:
         sys.stdout.write(f"{arg} is a shell builtin\n")
         return
     file_path = _search_executable(arg)
@@ -34,14 +43,6 @@ def command_type(arg):
         sys.stdout.write(f"{arg} is {file_path}\n")
         return
     sys.stdout.write(f"{arg}: not found\n")
-
-
-def command_pwd():
-    print(os.getcwd())
-
-
-def command_echo(args):
-    sys.stdout.write(shlex.join(args) + "\n")
 
 
 def command_cd(arg):
@@ -62,16 +63,8 @@ def main():
             continue
         parts = shlex.split(cmd_input)
         command, args = parts[0], parts[1:]
-        if command == "exit":
-            break
-        if command == "echo":
-            command_echo(args)
-        elif command == "type":
-            command_type(args[0])
-        elif command == "pwd":
-            command_pwd()
-        elif command == "cd":
-            command_cd(args)
+        if command in BUILT_IN:
+            BUILT_IN[command](args)
         elif not run_executable(command, args):
             sys.stdout.write(f"{cmd_input}: command not found\n")
 
