@@ -6,12 +6,16 @@ import sys
 
 
 BUILT_IN = {
-    "echo": lambda x: print(shlex.join(x)),
+    "echo": lambda x: print(" ".join(x)),
     "type": lambda x: command_type(x[0]),
     "pwd": lambda _: print(os.getcwd()),
     "cd": lambda x: command_cd(x),
     "exit": lambda _: exit(0)
 }
+
+
+def handle_single_quote_args(args: list[str]) -> list[str]:
+    return args
 
 
 def _search_executable(arg):
