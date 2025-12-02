@@ -67,7 +67,7 @@ def main():
         if not cmd_input.strip():
             print("\n")
             continue
-        if ">" in cmd_input or "1>" in cmd_input:
+        if ">" in cmd_input:
             os.system(cmd_input)
             continue
         parts = shlex.split(cmd_input)
